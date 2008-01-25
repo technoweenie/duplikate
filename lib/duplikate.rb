@@ -67,7 +67,10 @@ class Duplikate
 
 protected
   def execute_commands
-    @commands.each { |c| %x[svn #{c}] }
+    Dir.chdir @destination do
+      @commands.each { |c| %x[svn #{c}] }
+    end
+    nil
   end
   
   def process_path(path = nil)
