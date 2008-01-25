@@ -14,4 +14,4 @@ dupe.existing_files      => [..., ...]
 
 Duplikate.execute 'my-git-repo', 'my-svn-repo'
 
-TODO: Actually implement file copying
+TODO: Actual real-world usage!
