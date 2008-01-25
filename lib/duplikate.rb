@@ -48,6 +48,12 @@ class Duplikate
   
   def execute(message, test_mode = false)
     process if @existing_files.nil?
+    unless test_mode
+      (@added_files + @added_directories + @existing_files).each do |file|
+        FileUtils.cp_r(@source + file, @destination + File.dirname(file))
+      end
+      FileUtils.rm_rf((@deleted_files + @deleted_directories).collect! { |f| @destination + f })
+    end
     @commands = []
     (@added_files + @added_directories).each do |added|
       @commands << "add #{added}"
@@ -56,14 +62,14 @@ class Duplikate
       @commands << "rm #{deleted}"
     end
     @commands << "ci -m '#{message}'"
-    if test_mode
-      true
-    else
-      @commands.each { |c| %x[svn #{c}] }
-    end
+    test_mode || execute_commands
   end
 
 protected
+  def execute_commands
+    @commands.each { |c| %x[svn #{c}] }
+  end
+  
   def process_path(path = nil)
     unless path.nil?
       dest_entry = @destination + path

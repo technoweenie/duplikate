@@ -55,3 +55,41 @@ describe Duplikate do
     @duplikate.commands.should include("ci -m 'running spec'")
   end
 end
+
+describe Duplikate, "syncing two directories" do
+  before do
+    @source    = File.join(File.dirname(__FILE__), 'source')
+    @dest      = File.join(File.dirname(__FILE__), 'dest')
+    FileUtils.rm_rf @source + '-copy'
+    FileUtils.rm_rf @dest   + '-copy'
+    FileUtils.cp_r @source, @source + '-copy'
+    FileUtils.cp_r @dest,   @dest   + '-copy'
+    @source = Pathname.new(@source + '-copy')
+    @dest   = Pathname.new(@dest   + '-copy')
+    @duplikate = Duplikate.new @source, @dest
+    def @duplikate.execute_commands() end
+    @duplikate.execute("running spec")
+  end
+  
+  it "creates added directories" do
+    (@dest + 'foo/addme').should be_directory
+  end
+  
+  it "creates added files" do
+    (@dest + 'addme.txt').should be_file
+  end
+  
+  it "deletes deleted directories" do
+    (@dest + 'deleteme').should_not be_directory
+    (@dest + 'foo/deleteme').should_not be_directory
+  end
+  
+  it "deletes deleted files" do
+    (@dest + 'deleteme.txt').should_not be_file
+  end
+  
+  it "updates changed files" do
+    file = 'foo/same/changed.txt'
+    IO.read(@source + file).should == IO.read(@dest + file)
+  end
+end
