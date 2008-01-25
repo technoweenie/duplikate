@@ -1,0 +1,17 @@
+duplikate
+=========
+
+# process the differences between the two directories:
+
+dupe = Duplikate.process 'my-git-repo', 'my-svn-repo'
+dupe.added_files         => [..., ...]
+dupe.added_directories   => [..., ...]
+dupe.deleted_files       => [..., ...]
+dupe.deleted_directories => [..., ...]
+dupe.existing_files      => [..., ...]
+
+# Or actually make the changes and commit in svn:
+
+Duplikate.execute 'my-git-repo', 'my-svn-repo'
+
+TODO: Actually implement file copying

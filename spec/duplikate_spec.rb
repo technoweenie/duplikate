@@ -33,18 +33,6 @@ describe Duplikate do
     @duplikate.existing_files.should include("foo/same/changed.txt")
   end
   
-  it "processes existing files using a block" do
-    @custom = []
-    @duplikate.process do |file|
-      @custom << file
-    end
-    @duplikate.should have(0).existing_files
-    @custom.size.should == 3
-    @custom.should include("same.txt")
-    @custom.should include("foo/same.txt")
-    @custom.should include("foo/same/changed.txt")    
-  end
-  
   it "processes deleted_directories" do
     @duplikate.should have(2).deleted_directories
     @duplikate.deleted_directories.should include("deleteme")
@@ -54,5 +42,16 @@ describe Duplikate do
   it "processes deleted_files" do
     @duplikate.should have(1).deleted_files
     @duplikate.deleted_files.should include("deleteme.txt")
+  end
+  
+  it "executes svn commands" do
+    @duplikate.execute("running spec", true)
+    @duplikate.should have(6).commands
+    @duplikate.commands.should include("add addme.txt")
+    @duplikate.commands.should include("add foo/addme")
+    @duplikate.commands.should include("rm deleteme.txt")
+    @duplikate.commands.should include("rm deleteme")
+    @duplikate.commands.should include("rm foo/deleteme")
+    @duplikate.commands.should include("ci -m 'running spec'")
   end
 end
