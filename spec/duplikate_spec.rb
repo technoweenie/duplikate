@@ -33,6 +33,18 @@ describe Duplikate do
     @duplikate.existing_files.should include("foo/same/changed.txt")
   end
   
+  it "processes existing files using a block" do
+    @custom = []
+    @duplikate.process do |file|
+      @custom << file
+    end
+    @duplikate.should have(0).existing_files
+    @custom.size.should == 3
+    @custom.should include("same.txt")
+    @custom.should include("foo/same.txt")
+    @custom.should include("foo/same/changed.txt")    
+  end
+  
   it "processes deleted_directories" do
     @duplikate.should have(2).deleted_directories
     @duplikate.deleted_directories.should include("deleteme")
