@@ -10,8 +10,8 @@ class Duplikate
   #
   # NOTE: At this point, nothing has been done to either path.
   #
-  def self.process(source, dest)
-    dupe = new(source, dest)
+  def self.process(source, dest, options = nil)
+    dupe = new(source, dest, options)
     dupe.process
     dupe
   end
@@ -25,15 +25,16 @@ class Duplikate
   #
   # After this, it attempts to commit the destination svn repo.
   # You should have a clean working copy for this to work properly.
-  def self.execute(message, source, dest)
-    dupe = new(source, dest)
+  def self.execute(message, source, dest, options = nil)
+    dupe = new(source, dest, options)
     dupe.execute(message)
     dupe
   end
 
-  def initialize(source, dest, is_inverse=false)
+  def initialize(source, dest, options = nil)
+    @options = options || {}
     @source, @destination = Pathname.new(source), Pathname.new(dest)
-    @inverse = self.class.new(dest, source, true) unless is_inverse
+    @inverse = self.class.new(dest, source, @options.merge(:is_inverse => true)) unless @options[:is_inverse]
   end
   
   def process
@@ -66,9 +67,18 @@ class Duplikate
   end
 
 protected
+  def svn_command(args)
+    cmd = [@options[:svn] || 'svn']
+    if args =~ /^c(i|ommit)/
+      cmd << "--username" << @options[:username] if @options[:username]
+      cmd << "--password" << @options[:password] if @options[:password]
+    end
+    (cmd << args) * " "
+  end
+  
   def execute_commands
     Dir.chdir @destination do
-      @commands.each { |c| %x[svn #{c}] }
+      @commands.each { |c| %x[#{svn_command c}] }
     end
     nil
   end
