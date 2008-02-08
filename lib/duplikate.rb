@@ -33,6 +33,7 @@ class Duplikate
 
   def initialize(source, dest, options = nil)
     @options = options || {}
+    @debug   = @options[:debug]
     @source, @destination = Pathname.new(source), Pathname.new(dest)
     @inverse = self.class.new(dest, source, @options.merge(:is_inverse => true)) unless @options[:is_inverse]
   end
@@ -40,9 +41,12 @@ class Duplikate
   def process
     @deleted_files, @deleted_directories, @added_files, @added_directories, @existing_files = [], [], [], [], []
     if @inverse
+      puts "PROCESSING INVERSE" if @debug
       @inverse.process
       @deleted_files       = @inverse.added_files
       @deleted_directories = @inverse.added_directories
+    else
+      puts "PROCESSING" if @debug
     end
     process_path
   end
@@ -78,7 +82,11 @@ protected
   
   def execute_commands
     Dir.chdir @destination do
-      @commands.each { |c| %x[#{svn_command c}] }
+      @commands.each do |c| 
+        cmd = svn_command(c)
+        puts "EXECUTING: #{cmd}" if @debug
+        %x[#{cmd}] 
+      end
     end
     nil
   end
@@ -87,6 +95,7 @@ protected
     unless path.nil?
       dest_entry = @destination + path
       unless dest_entry.directory?
+        puts "ADDING DIR: #{path.inspect}" if @debug
         @added_directories << path.to_s
         return
       end
@@ -105,6 +114,12 @@ protected
   end
   
   def process_file(file)
-    ((@destination + file).file? ? @existing_files : @added_files) << file.to_s
+    if (@destination + file).file?
+      puts "EXISTING FILE: #{file.inspect}" if @debug
+      @existing_files << file.to_s
+    else
+      puts "ADD FILE: #{file.inspect}" if @debug
+      @added_files << file.to_s
+    end
   end
 end
