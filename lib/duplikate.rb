@@ -1,4 +1,5 @@
 require 'pathname'
+require 'fileutils'
 class Duplikate
   attr_accessor :source, :destination
   attr_reader :deleted_files, :deleted_directories, :added_files, :added_directories, :existing_files, :commands
