@@ -1,0 +1,7 @@
+duplikate changes
+=================
+
+trunk
+-----
+add report method, to display lists of files by category
+add dry_run method, to display commands

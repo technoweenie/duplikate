@@ -17,6 +17,13 @@ class Duplikate
     dupe
   end
   
+  # Display the commands that +execute+ would execute.
+  def self.dry_run(source, dest, options = nil)
+    dupe = new(source, dest, options)
+    dupe.dry_run
+    dupe
+  end
+  
   # Actually syncs the source path to the destination path.  This 
   # calls #process if needed, and then:
   #
@@ -32,6 +39,14 @@ class Duplikate
     dupe
   end
 
+  # Print the names of files and directories that would be added or
+  # deleted.
+  def self.report(source, dest, options = nil)
+    dupe = new(source, dest, options)
+    dupe.report
+    dupe
+  end
+  
   def initialize(source, dest, options = nil)
     @options = options || {}
     @debug   = @options[:debug]
@@ -52,6 +67,11 @@ class Duplikate
     process_path
   end
   
+  def dry_run(msg="<commit message>")
+    execute(msg, true)
+    puts commands.join("\n")
+  end
+  
   def execute(message, test_mode = false)
     process if @existing_files.nil?
     unless test_mode
@@ -69,6 +89,18 @@ class Duplikate
     end
     @commands << "ci -m '#{message}'"
     test_mode || execute_commands
+  end
+  
+  def report
+    rows = %w[added_files added_directories deleted_files deleted_directories existing_files].each do |name|
+      files = self.send name.intern
+      if files.any?
+        puts name.capitalize.gsub(/_(\w)/) { " #{$1.upcase}" }
+        puts '=' * name.to_s.length
+        puts files.join(', ')
+        puts
+      end
+    end
   end
 
 protected

@@ -4,11 +4,13 @@ duplikate
 # process the differences between the two directories:
 
 dupe = Duplikate.process 'my-git-repo', 'my-svn-repo'
-dupe.added_files         => [..., ...]
-dupe.added_directories   => [..., ...]
-dupe.deleted_files       => [..., ...]
-dupe.deleted_directories => [..., ...]
-dupe.existing_files      => [..., ...]
+dupe.added_files         #=> [..., ...]
+dupe.added_directories   #=> [..., ...]
+dupe.deleted_files       #=> [..., ...]
+dupe.deleted_directories #=> [..., ...]
+dupe.existing_files      #=> [..., ...]
+
+dupe.report
 
 # Or actually make the changes and commit in svn:
 

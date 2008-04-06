@@ -54,6 +54,29 @@ describe Duplikate do
     @duplikate.commands.should include("rm foo/deleteme")
     @duplikate.commands.should include("ci -m 'running spec'")
   end
+  
+  describe :report do
+    it "prints changes" do
+      text = capturing_stdout { @duplikate.report }
+      text.should =~ /Added Files\n=+\naddme.txt/
+      text.should =~ /Added Directories\n=+\nfoo\/addme/
+      text.should =~ /Deleted Files\n=+\ndeleteme.txt/
+      text.should =~ /Deleted Directories\n=+\ndeleteme/
+    end
+  end
+  
+  describe :dry_run do
+    it "prints commands" do
+      lines = capturing_stdout { @duplikate.dry_run }.split("\n")
+      lines.length.should == 6
+      lines.should include("add addme.txt")
+      lines.should include("add foo/addme")
+      lines.should include("rm deleteme.txt")
+      lines.should include("rm deleteme")
+      lines.should include("rm foo/deleteme")
+      lines.should include("ci -m '<commit message>'")
+    end
+  end
 end
 
 describe Duplikate, "syncing two directories" do
