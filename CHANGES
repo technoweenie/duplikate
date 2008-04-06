@@ -3,5 +3,6 @@ duplikate changes
 
 trunk
 -----
-add report method, to display lists of files by category
-add dry_run method, to display commands
+add Duplikate#ignore method
+add Duplikate#report and Duplikate.report, to display lists of files by kategory
+add Duplikate#dry_run and Duplikate.dry_run, to print commands that would execute

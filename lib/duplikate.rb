@@ -2,7 +2,7 @@ require 'pathname'
 require 'fileutils'
 class Duplikate
   attr_accessor :source, :destination
-  attr_reader :deleted_files, :deleted_directories, :added_files, :added_directories, :existing_files, :commands
+  attr_reader :deleted_files, :deleted_directories, :added_files, :added_directories, :existing_files, :commands, :ignore_patterns
 
   # Processes the differences between the given source and destination
   # paths.  The returned Duplikate object has the *_directories and *_files
@@ -52,6 +52,13 @@ class Duplikate
     @debug   = @options[:debug]
     @source, @destination = Pathname.new(source), Pathname.new(dest)
     @inverse = self.class.new(dest, source, @options.merge(:is_inverse => true)) unless @options[:is_inverse]
+    @ignore_patterns = [/^\.(git|svn)?\.?$/]
+  end
+  
+  # Ignores paths that match one of the +patterns+, where each pattern
+  # is either a String or Regexp
+  def ignore(*patterns)
+    @ignore_patterns += patterns
   end
   
   def process
@@ -128,6 +135,7 @@ protected
     unless path.nil?
       dest_entry = @destination + path
       unless dest_entry.directory?
+        return if ignore?(path.to_s)
         puts "ADDING DIR: #{path.inspect}" if @debug
         @added_directories << path.to_s
         return
@@ -135,8 +143,9 @@ protected
     end
 
     (path.nil? ? @source : @source + path).each_entry do |entry|
-      next if entry.to_s =~ /^\.(git|svn)?\.?$/
+      next if entry.to_s =~ /^\.{1,2}$/
       full_entry   = path.nil? ? entry : path + entry
+      next if ignore?(full_entry.to_s)
       source_entry = @source + full_entry
       if source_entry.directory?
         process_path(full_entry)
@@ -154,5 +163,9 @@ protected
       puts "ADD FILE: #{file.inspect}" if @debug
       @added_files << file.to_s
     end
+  end
+  
+  def ignore?(pathname)
+    ignore_patterns.find { |p| p === pathname }
   end
 end

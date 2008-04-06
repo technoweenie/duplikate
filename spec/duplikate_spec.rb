@@ -79,6 +79,33 @@ describe Duplikate do
   end
 end
 
+describe Duplikate, "ignore" do
+  before do
+    @source    = File.join(File.dirname(__FILE__), 'source')
+    @dest      = File.join(File.dirname(__FILE__), 'dest')
+    @duplikate = Duplikate.new @source, @dest
+  end
+
+  it "omits ignored files" do
+    @duplikate.ignore 'addme.txt'
+    @duplikate.process
+    @duplikate.added_files.should_not include("addme.txt")
+  end
+  
+  it "omits ignored directories" do
+    @duplikate.ignore 'foo/addme'
+    @duplikate.process
+    @duplikate.added_directories.should_not include("foo/addme")
+  end
+  
+  it "omits ignored file patterns" do
+    @duplikate.ignore /ad*me/
+    @duplikate.process
+    @duplikate.added_directories.should_not include("foo/addme")
+    @duplikate.added_files.should_not include("addme.txt")
+  end
+end
+
 describe Duplikate, "syncing two directories" do
   before do
     @source    = File.join(File.dirname(__FILE__), 'source')
